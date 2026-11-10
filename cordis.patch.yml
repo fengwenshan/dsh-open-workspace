@@ -1,0 +1,4 @@
+# dsh-open-workspace bundle：向组合挂 host 半（消费 ws-workbench 的打开请求）
+- insert:
+    - id: dsh-open-workspace
+      name: 'dsh-open-workspace'

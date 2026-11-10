@@ -1,0 +1,36 @@
+{
+  "name": "dsh-open-workspace",
+  "description": "把 ws-workbench 写下的「打开工作区」请求交给 DSH：新增或复用左侧工作区并打开空白新会话，零外部依赖",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.mjs",
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "default": "./lib/index.mjs"
+    },
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "workspace",
+    "ws-workbench"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  }
+}
