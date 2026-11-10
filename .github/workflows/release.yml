@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,21 +18,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 校验 tag 与 package.json.version 一致
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
             echo "tag $GITHUB_REF_NAME 与 package.json version $VERSION 不一致" >&2
             exit 1
           fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: 打包 zip
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           zip -r "dsh-open-workspace-${VERSION}.zip" \
             package.json cordis.patch.yml lib README.md
           unzip -l "dsh-open-workspace-${VERSION}.zip"
 
       - name: 创建 GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           name: dsh-open-workspace ${{ github.ref_name }}
