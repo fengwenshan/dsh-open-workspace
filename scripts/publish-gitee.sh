@@ -37,7 +37,7 @@ VERSION="${VERSION:-$(node -p "require('./package.json').version")}"
 VERSION="${VERSION#v}"
 ZIP="${ZIP:-dsh-open-workspace-${VERSION}.zip}"
 if [[ ! -f "$ZIP" ]]; then
-  echo "找不到 $ZIP，先本地打包"
+  echo "找不到 ${ZIP}，先本地打包"
   bash scripts/build-zip.sh
 fi
 
