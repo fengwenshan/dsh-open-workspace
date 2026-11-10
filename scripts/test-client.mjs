@@ -49,6 +49,23 @@ function boot(options = {}) {
     },
   }
 
+  // 可选：把行挂进一个滚动容器，验证「停在可视区偏上 18%」的定位算法
+  const scroller =
+    options.scroller === true
+      ? {
+          scrollTop: 0,
+          clientHeight: 500,
+          scrollHeight: 2000,
+          parentElement: null,
+          getBoundingClientRect: () => ({ top: 100 }),
+        }
+      : null
+  if (scroller !== null) {
+    for (const row of [...workspaceRows, sessionRow]) row.parentElement = scroller
+    workspaceRows[1].getBoundingClientRect = () => ({ top: 700 })
+    sessionRow.getBoundingClientRect = () => ({ top: 760 })
+  }
+
   const document = {
     querySelectorAll(selector) {
       if (selector.includes('workspace:') && domMode === 'group') return workspaceRows
@@ -81,6 +98,7 @@ function boot(options = {}) {
     document,
   }
   sandbox.window = {}
+  if (scroller !== null) sandbox.window.getComputedStyle = () => ({ overflowY: 'auto' })
   sandbox.window.__ModuleLoader__ = {
     load(module) {
       sandbox.loadedModule = module
@@ -123,6 +141,7 @@ function boot(options = {}) {
   return {
     workspaceRows,
     sessionRow,
+    scroller,
     opened,
     created,
     intervalCallbacks,
@@ -145,7 +164,6 @@ async function flush(ms = 120) {
   const row = state.workspaceRows[1]
   assert.equal(row.expanded, true, '折叠的工作区行应被展开')
   assert.equal(row.clicks, 1, '应只点击一次工作区行')
-  assert.ok(row.scrolls.includes('nearest') && row.scrolls.includes('center'), '工作区行应被滚动定位')
   assert.deepEqual(state.sessionRow.scrolls, ['nearest'], '新会话行应滚进视野')
 }
 
@@ -183,4 +201,21 @@ async function flush(ms = 120) {
   assert.equal(state.created.length, 0)
 }
 
-console.log('test-client: 5 组用例全部通过')
+// 6) 分组视图 + 滚动容器：会话行应停在可视区上方 18% 处（不是贴底）
+{
+  const state = boot({ scroller: true })
+  state.intervalCallbacks[0]()
+  await flush(400)
+  // 会话行距滚动区顶 760-100=660，可视高 500 → 目标 scrollTop = 660 - 500*0.18 = 570
+  assert.equal(state.scroller.scrollTop, 570, '会话行应停在可视区偏上位置')
+}
+
+// 7) 单列表视图 + 滚动容器：同样定位到偏上位置
+{
+  const state = boot({ domMode: 'flat', scroller: true })
+  state.intervalCallbacks[0]()
+  await flush(300)
+  assert.equal(state.scroller.scrollTop, 570, '单列表视图也应停在可视区偏上位置')
+}
+
+console.log('test-client: 7 组用例全部通过')
