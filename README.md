@@ -36,3 +36,12 @@ scripts/dsh-plugin-install.sh --uninstall
   3. 创建 Release 并上传 zip。
 - ws-workbench 的「设置 → 资源」从 GitHub Release `latest` 读取版本并下载该 zip 安装。
 - 本地打包：`scripts/build-zip.sh`（产物不入库，`.gitignore` 已忽略 `*.zip`）。
+
+## 国内镜像（Gitee）
+
+GitHub Release 会同步一份到 [Gitee](https://gitee.com/feng_wenshan/dsh-open-workspace)：
+
+- ws-workbench 的「设置 → 资源」**默认从 Gitee 读版本、下 zip**，Gitee 不通时自动回退 GitHub；
+- 镜像由 release 工作流自动完成，需要在本仓库配置 secret `GITEE_TOKEN`（Gitee 私人令牌，
+  `projects` 权限）；没配时只发 GitHub Release，客户端仍可用（回退 GitHub 下载）；
+- 本地补镜像：`GITEE_TOKEN=xxx node scripts/gitee-mirror.mjs --version 0.1.0`。
