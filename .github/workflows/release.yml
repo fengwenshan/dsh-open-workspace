@@ -1,0 +1,38 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 校验 tag 与 package.json.version 一致
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME 与 package.json version $VERSION 不一致" >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: 打包 zip
+        run: |
+          zip -r "dsh-open-workspace-${VERSION}.zip" \
+            package.json cordis.patch.yml lib README.md
+          unzip -l "dsh-open-workspace-${VERSION}.zip"
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: dsh-open-workspace ${{ github.ref_name }}
+          files: dsh-open-workspace-*.zip
+          generate_release_notes: true
+          prerelease: false

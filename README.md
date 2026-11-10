@@ -25,3 +25,14 @@ scripts/dsh-plugin-install.sh --uninstall
 重启 DSH 后，在页面里打开 `/dsh-open-workspace/status` 看插件版本和最近一次请求；
 没有反应时先看 `$DSH_HOME/open-workspace.json` 是否还在、`$DSH_HOME/profiles/desktop/package.json`
 里有没有 `dsh-open-workspace`。
+
+## 版本与发布
+
+- 版本号就是 `package.json` 的 `version`；tag 必须写成 `v<version>`（如 `v0.1.0`）。
+- 发布：`git tag -a v0.2.0 -m "v0.2.0" && git push origin main --tags`。
+- GitHub Actions 在 tag push 后自动：
+  1. 校验 tag 与 `package.json.version` 一致；
+  2. 打 `dsh-open-workspace-<version>.zip`（根目录含 `package.json`、`cordis.patch.yml`、`lib/`、`README.md`）；
+  3. 创建 Release 并上传 zip。
+- ws-workbench 的「设置 → 资源」从 GitHub Release `latest` 读取版本并下载该 zip 安装。
+- 本地打包：`scripts/build-zip.sh`（产物不入库，`.gitignore` 已忽略 `*.zip`）。
