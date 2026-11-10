@@ -42,19 +42,20 @@ jobs:
           generate_release_notes: true
           prerelease: false
 
-      # 国内直连 GitHub 慢/不稳，ws-workbench「设置 → 资源」默认从 Gitee 下 zip。
-      # 仓库没配 GITEE_TOKEN secret 时这两个步骤跳过（客户端自动回退 GitHub）。
-      - name: 镜像到 Gitee（国内下载加速）
+      # 国内直连 GitHub 慢/不稳：ws-workbench「设置 → 资源」默认从 Gitee raw 下 zip。
+      # 仓库没配 GITEE_TOKEN secret 时跳过（客户端自动回退 GitHub Release）。
+      - name: 发布到 Gitee（dist 分支，国内下载加速）
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
           if [ -z "$GITEE_TOKEN" ]; then
-            echo "::warning::插件仓库没配 GITEE_TOKEN secret，跳过 Gitee 镜像（国内用户会回退 GitHub 下载）"
+            echo "::warning::没配 GITEE_TOKEN secret，跳过 Gitee 镜像（国内用户会回退 GitHub 下载）"
             exit 0
           fi
           VERSION=$(node -p "require('./package.json').version")
-          node scripts/gitee-mirror.mjs --version "$VERSION"
+          GITEE_URL="https://oauth2:${GITEE_TOKEN}@gitee.com/feng_wenshan/dsh-open-workspace.git" \
+            bash scripts/publish-gitee.sh --version "$VERSION"
 
       - name: 同步源码到 Gitee
         if: startsWith(github.ref, 'refs/tags/')

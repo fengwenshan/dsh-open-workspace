@@ -39,9 +39,17 @@ scripts/dsh-plugin-install.sh --uninstall
 
 ## 国内镜像（Gitee）
 
-GitHub Release 会同步一份到 [Gitee](https://gitee.com/feng_wenshan/dsh-open-workspace)：
+GitHub Release 的 zip 会同步一份到 [Gitee](https://gitee.com/feng_wenshan/dsh-open-workspace)
+的 `dist` 分支，ws-workbench「设置 → 资源」**默认从 Gitee raw 读版本、下 zip**，
+Gitee 不通时自动回退 GitHub Release：
 
-- ws-workbench 的「设置 → 资源」**默认从 Gitee 读版本、下 zip**，Gitee 不通时自动回退 GitHub；
-- 镜像由 release 工作流自动完成，需要在本仓库配置 secret `GITEE_TOKEN`（Gitee 私人令牌，
-  `projects` 权限）；没配时只发 GitHub Release，客户端仍可用（回退 GitHub 下载）；
-- 本地补镜像：`GITEE_TOKEN=xxx node scripts/gitee-mirror.mjs --version 0.1.0`。
+- 版本：`https://gitee.com/feng_wenshan/dsh-open-workspace/raw/dist/latest.json`
+- 包：`https://gitee.com/feng_wenshan/dsh-open-workspace/raw/dist/dsh-open-workspace-<version>.zip`
+
+发版时 release 工作流会在 GitHub Release 之后自动同步（需要仓库 secret `GITEE_TOKEN`，
+Gitee 私人令牌；没配时只发 GitHub Release，客户端仍可用）。本地补镜像：
+
+```bash
+GITEE_URL="https://oauth2:<token>@gitee.com/feng_wenshan/dsh-open-workspace.git" \
+  bash scripts/publish-gitee.sh --version 0.1.0
+```
