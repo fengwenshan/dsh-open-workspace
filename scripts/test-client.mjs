@@ -18,7 +18,9 @@ function makeRow(key, text, expanded, rectTop = 100) {
     scrolls: [],
     clicks: 0,
     getAttribute(name) {
-      return name === 'aria-expanded' ? String(this.expanded) : null
+      if (name === 'aria-expanded') return String(this.expanded)
+      if (name === 'data-row-key') return this.key
+      return null
     },
     getBoundingClientRect() {
       return { top: rectTop, bottom: rectTop + 28 }
@@ -49,13 +51,17 @@ function boot(options = {}) {
   const sessionRow = makeRow('session:new', '新建会话', false, sessionTop)
   const sessionRowVisible = domMode !== 'group-no-session'
 
+  const allRows = () => (domMode === 'flat' ? [sessionRow] : [...workspaceRows, sessionRow])
   const document = {
     querySelectorAll(selector) {
+      if (selector === '[data-row-key]') return allRows()
       if (selector.includes('workspace:') && domMode !== 'flat') return workspaceRows
       return []
     },
     querySelector(selector) {
       if (selector.includes('aria-selected="true"') && sessionRowVisible) return sessionRow
+      const exact = /^\[data-row-key="(.+)"\]$/.exec(selector)
+      if (exact) return allRows().find((el) => el.key === exact[1]) ?? null
       return null
     },
   }
@@ -132,7 +138,7 @@ async function flush(ms = 120) {
   const state = boot()
   assert.equal(state.intervalCallbacks.length, 1, '应只起一个轮询定时器')
   state.intervalCallbacks[0]()
-  await flush(400)
+  await flush(1200)
   assert.deepEqual(state.created, ['/x/xhfjmsq-layui'], '应按目录创建/复用工作区')
   assert.deepEqual(state.opened, ['ws-1'], '应打开对应工作区')
   const row = state.workspaceRows[1]
@@ -165,7 +171,7 @@ async function flush(ms = 120) {
 {
   const state = boot({ domMode: 'flat' })
   state.intervalCallbacks[0]()
-  await flush(400)
+  await flush(3400)
   assert.deepEqual(state.sessionRow.scrolls, ['start'], '单列表视图应滚到当前会话')
 }
 
