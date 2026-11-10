@@ -72,7 +72,8 @@ function boot(options = {}) {
       return intervalCallbacks.length
     },
     clearInterval: () => {},
-    fetch: async () => {
+    fetch: async (_url, init) => {
+      if (init && init.method === 'POST') return { ok: true, json: async () => ({ ok: true }) }
       const pending = pendingRequest
       pendingRequest = null
       return { ok: true, json: async () => ({ request: pending ?? null }) }
@@ -137,7 +138,7 @@ async function flush(ms = 120) {
   const row = state.workspaceRows[1]
   assert.equal(row.expanded, true, '折叠的工作区行应被展开')
   assert.equal(row.clicks, 1, '应只点击一次工作区行')
-  assert.deepEqual(row.scrolls, ['start'], '工作区行应滚到偏上位置')
+  assert.deepEqual(row.scrolls, ['start', 'start'], '点击前后各滚一次到偏上位置')
   assert.equal(row.style.scrollMarginTop, '64px', '应留出顶部偏移')
   assert.deepEqual(state.sessionRow.scrolls, [], '会话行已露出来时不应再滚')
 }
@@ -182,7 +183,7 @@ async function flush(ms = 120) {
   state.intervalCallbacks[0]()
   await flush(1000)
   const row = state.workspaceRows[1]
-  assert.deepEqual(row.scrolls, ['start'], '没有会话行时应定位工作区行')
+  assert.deepEqual(row.scrolls, ['start', 'start'], '没有会话行时工作区行仍应被定位')
 }
 
 // 7) start 不生效（行还在视口下半部）：退回 center，保证至少能滚
@@ -190,7 +191,7 @@ async function flush(ms = 120) {
   const state = boot({ viewport: 800, workspaceTop: 700 })
   state.intervalCallbacks[0]()
   await flush(800)
-  assert.deepEqual(state.workspaceRows[1].scrolls, ['start', 'center'], 'start 无效时应退回 center')
+  assert.deepEqual(state.workspaceRows[1].scrolls, ['start', 'start', 'center'], 'start 无效时应退回 center')
 }
 
 console.log('test-client: 7 组用例全部通过')
