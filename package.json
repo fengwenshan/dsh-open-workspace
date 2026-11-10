@@ -1,7 +1,7 @@
 {
   "name": "dsh-open-workspace",
   "description": "把 ws-workbench 写下的「打开工作区」请求交给 DSH：新增或复用左侧工作区并打开空白新会话，零外部依赖",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "type": "module",
   "main": "lib/index.mjs",

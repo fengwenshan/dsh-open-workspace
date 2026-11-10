@@ -21,7 +21,7 @@ function makeRow(key, text, expanded, rectTop = 100) {
       return name === 'aria-expanded' ? String(this.expanded) : null
     },
     getBoundingClientRect() {
-      return { top: rectTop }
+      return { top: rectTop, bottom: rectTop + 28 }
     },
     scrollIntoView(options) {
       this.scrolls.push(options?.block)
@@ -38,13 +38,13 @@ function makeRow(key, text, expanded, rectTop = 100) {
  * @param {{ phase?: string, domMode?: 'group' | 'flat' | 'group-no-session', request?: object | null, sessionTop?: number, viewport?: number }} options
  */
 function boot(options = {}) {
-  const { phase = 'ready', domMode = 'group', sessionTop = 100 } = options
+  const { phase = 'ready', domMode = 'group', sessionTop = 100, workspaceTop = 100 } = options
   let pendingRequest =
     options.request === undefined ? { requestId: 'r1', path: '/x/xhfjmsq-layui' } : options.request
 
   const workspaceRows = [
     makeRow('workspace:aaa', 'monorepo-app', true),
-    makeRow('workspace:bbb', 'xhfjmsq-layui（西湖风景名胜区）', false),
+    makeRow('workspace:bbb', 'xhfjmsq-layui（西湖风景名胜区）', false, workspaceTop),
   ]
   const sessionRow = makeRow('session:new', '新建会话', false, sessionTop)
   const sessionRowVisible = domMode !== 'group-no-session'
@@ -137,8 +137,9 @@ async function flush(ms = 120) {
   const row = state.workspaceRows[1]
   assert.equal(row.expanded, true, '折叠的工作区行应被展开')
   assert.equal(row.clicks, 1, '应只点击一次工作区行')
-  assert.deepEqual(state.sessionRow.scrolls, ['start'], '新会话行应滚到顶部位置')
-  assert.equal(state.sessionRow.style.scrollMarginTop, '64px', '应留出顶部偏移')
+  assert.deepEqual(row.scrolls, ['start'], '工作区行应滚到偏上位置')
+  assert.equal(row.style.scrollMarginTop, '64px', '应留出顶部偏移')
+  assert.deepEqual(state.sessionRow.scrolls, [], '会话行已露出来时不应再滚')
 }
 
 // 2) 请求只消费一次：第二次轮询不重复创建/打开
@@ -184,12 +185,12 @@ async function flush(ms = 120) {
   assert.deepEqual(row.scrolls, ['start'], '没有会话行时应定位工作区行')
 }
 
-// 7) 落点在视口下半部时再摆一次（兜住展开动画造成的布局漂移）
+// 7) start 不生效（行还在视口下半部）：退回 center，保证至少能滚
 {
-  const state = boot({ viewport: 800, sessionTop: 600 })
+  const state = boot({ viewport: 800, workspaceTop: 700 })
   state.intervalCallbacks[0]()
-  await flush(600)
-  assert.deepEqual(state.sessionRow.scrolls, ['start', 'start'], '位置不够靠上时应再摆一次')
+  await flush(800)
+  assert.deepEqual(state.workspaceRows[1].scrolls, ['start', 'center'], 'start 无效时应退回 center')
 }
 
 console.log('test-client: 7 组用例全部通过')
