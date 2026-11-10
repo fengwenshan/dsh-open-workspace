@@ -22,6 +22,12 @@ scripts/dsh-plugin-install.sh --uninstall
 
 ## 调试
 
+本地冒烟测试（mock DOM + mock 宿主服务，验证「打开工作区 → 侧边栏展开并滚到新会话」）：
+
+```bash
+node scripts/test-client.mjs
+```
+
 重启 DSH 后，在页面里打开 `/dsh-open-workspace/status` 看插件版本和最近一次请求；
 没有反应时先看 `$DSH_HOME/open-workspace.json` 是否还在、`$DSH_HOME/profiles/desktop/package.json`
 里有没有 `dsh-open-workspace`。

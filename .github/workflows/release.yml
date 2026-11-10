@@ -26,6 +26,9 @@ jobs:
             exit 1
           fi
 
+      - name: 测试客户端插件
+        run: node scripts/test-client.mjs
+
       - name: 打包 zip
         run: |
           VERSION=$(node -p "require('./package.json').version")
