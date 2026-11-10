@@ -26,6 +26,11 @@ scripts/dsh-plugin-install.sh --uninstall
 没有反应时先看 `$DSH_HOME/open-workspace.json` 是否还在、`$DSH_HOME/profiles/desktop/package.json`
 里有没有 `dsh-open-workspace`。
 
+## 打开后的行为
+
+点「打开方式 → DeepSeek」后，插件把当前目录变成 DeepSeek 的一个工作区并打开空白新会话；
+侧边栏同时自动展开这个工作区的分组、滚动到它，并定位到新会话那一行，不用再手动去找。
+
 ## 版本与发布
 
 - 版本号就是 `package.json` 的 `version`；tag 必须写成 `v<version>`（如 `v0.1.0`）。
